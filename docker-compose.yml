@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  php:
+    container_name: php
+    build:
+      context: ./php-react
+      dockerfile: Dockerfile
+    ports:
+      - "4000:80"
+    volumes:
+      - ./php-react:/var/www/html
+    depends_on:
+      - mysql
+
+  mysql:
+    container_name: mysql
+    image: mysql:5.7
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./php-react/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  react:
+    container_name: react
+    image: node:12.22.9
+    working_dir: /app
+    command: >
+      sh -c "cd src && npm install && npm start"
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+
+volumes:
+  mysql_data:
